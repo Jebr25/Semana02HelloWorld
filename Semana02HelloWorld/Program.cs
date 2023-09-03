@@ -41,3 +41,5 @@ var busquedaDNI = personas.Where(z => z.Dni == 20404870).FirstOrDefault();
 var busquedaLINQ = (from p in personas
                     where p.Dni == 20404870
                     select p).FirstOrDefault();
+
+Console.WriteLine("Hello, World!");
