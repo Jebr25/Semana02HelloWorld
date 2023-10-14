@@ -23,3 +23,200 @@ Global
 		SolutionGuid = {E72CBF7D-492C-4768-AF9E-24B35F69FEE3}
 	EndGlobalSection
 EndGlobal
+
+###################################################################################################################################################
+GitHub
+Jeber.linares@gmail.com
+vBp9#wyMU83uDHw
+
+Paso 1  instalar paquetes
+
+Install-Package Microsoft.EntityFrameworkCore
+Install-Package Microsoft.EntityFrameworkCore.SqlServer
+Install-Package Microsoft.EntityFrameworkCore.Tools
+
+Paso 2 el scaffold 
+
+PARA USUARIO Y CLAVE DE BD:
+Scaffold-DBContext "Server=DESKTOP-FSDKG7N;Database=AUTOCAREMANAGER;User=sa;Pwd=1234;TrustServerCertificate=True" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Data -Force -nopluralize
+
+PARA USUARIO Y CLAVE DE BD con carpeta Infrastructure:
+Scaffold-DBContext "Server=DESKTOP-FSDKG7N;Database=AUTOCAREMANAGER;User=sa;Pwd=1234;TrustServerCertificate=True" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Infrastructure/Data -Force -nopluralize
+
+
+PARA AUTENTIFICACION WINDOWS:
+Scaffold-DBContext "Server=DESKTOP-FSDKG7N;Database=StoreDB;Integrated Security=true;TrustServerCertificate=True" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Data -Force -nopluralize
+
+Paso 3 en el appsettings
+
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "DevConnection": "Server=DESKTOP-FSDKG7N;Database=PeruDB;User=sa;Pwd=1234;TrustServerCertificate=True"
+  }
+}
+
+Paso 4 en el program
+
+aqui agregamos en API referencia del proyecto
+
+// Add services to the container.
+var _config = builder.Configuration;
+var _cnx = _config.GetConnectionString("DevConnection");
+builder.Services.AddDbContext<PeruDbContext>(options => options.UseSqlServer(_cnx));
+
+builder.Services.AddTransient<ICategoryRepository, CategoryRepository>();
+
+Paso 5 en controlers click derecho agregar eleemento con scafoold  
+seleccionar lo tabla que se desea trabajar
+
+Paso 6 
+
+En la carpeta repositories click derecho agregamos una clase y colocamos la clase castegoryrepository
+
+    public class CategoryRepository
+    {
+        private readonly StoreDbContext _dbContext;
+
+        public CategoryRepository(StoreDbContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
+
+        public async Task<IEnumerable<Category>> GetAll()
+        {
+            return await _dbContext.Category.ToListAsync();
+        }
+    }
+
+paso 7
+
+para crear la interfaz nos posicionamos en el clase click derecho y acciones rapidas / extraer interfaz  y esa interfaz creada la movemos a la carpeta que corresponde
+
+paso 8
+
+en controladores agregamos un controlado  /  en API / controlador API en blanco
+
+ public class CategoryController : ControllerBase
+ {
+     private readonly ICategoryRepository _categoryRepository;
+
+     public CategoryController(ICategoryRepository categoryRepository)
+     {
+         _categoryRepository = categoryRepository;
+     }
+
+     [HttpGet]
+     public async Task<IActionResult> GetAll()
+     {
+         var categories = await _categoryRepository.GetAll();
+         return Ok(categories);
+     }
+ }
+
+Paso 9 todas las interfaces se registran en program
+
+builder
+    .Services
+    .AddTransient<ICategoryRepository, CategoryRepository>();
+
+Esto es para crear un proyecto desde 0 
+
+1-crear proyecto ASP.NET core web api (ne WEBAPI)
+2-NET 7 y checks en usar y habilitar
+3-En la solución de la derecha colocar Agregar / Nuevo proyecto /
+biblioteca de clases / le colocamos .domain (al final) /
+borramos la Class1.cs que se crea
+4- en la solución colocar agregar / nuevo proyecto / 
+proyecto de base de datos de SQL server  (en el buscador base de datos) /
+podemos colocarle en el nombre .Database 
+5-en la solución colocamos importar / base de datos / seleccionamos
+conexión colocamos el nombre del servidor y como esta autenticado /
+darle check a importar solo objetos con ambito / finalizar
+6- en la DOMAIN agregar / nueva carpeta / agregamos las siguientes 
+carpetas: Core (DTO, Entities, Interfaces, Services, Settings) 
+Infrastructure (data,repositories, shared)
+7- en la barra de herramientas seleccionar Administrador de paquetes
+nuget / consola de administrador de paquetes
+8- los paquetes para instalar del scaffold los realizamos en el 
+.DOMAIN se selecciona el proyecto en el cual quieres instalar
+9- los C# creados por default en DATA tenemos que moverlos a Entities
+todo menos el DbContext.cs ese se queda en DATA terminado ello 
+en la solución seleccionamos Recompilar solución
+10- crear en controllers  agregar / nuevo elemento con scaffold / seleccionar API / Controlador API con acciones que usan entity framework /
+seleccionar el modelo al que le vas agregar el controlador /
+
+
+
+
+
+
+
+#################################################################################################################################################
+	API
+	Application Programming Interface
+	Es un conjunto de productos y servicios tecnológicos que permiten comunicarse a través de internet.
+	Permite integrar diferentes aplicaciones web, móviles ,automatizar procesos de negocios, extraer datos de diferentes sistemas o construir integraciones entre diferentes aplicaciones sin importar el lenguaje de programación utilizado.
+	REST
+	Representational State Transfer
+	Es un estilo arquitectónico utilizado en el desarrollo de aplicaciones web que se comunican a través de internet.
+	Promueve la interoperabilidad y escalabilidad de las aplicaciones web sin conocer detalles internos de cada uno. La interoperabilidad permite la comunicación entre sistema a través de objeto sin importar el lenguaje de programación
+	REST API. 
+	Se refiere a la restricciones y principios del diseño arquitectónico REST.
+Utiliza los verbos HTTP REQUEST METHODS: (GET, POST, PUT, DELETE) (READ, CREATE, UPDATE, DELETE) para realizar operaciones en recursos como URLs y devuelven respuestas en formato json o xml.
+	HTTP HEADERS:
+	User-Agent : identifica el tipo de agente de usuario (navegador web, robot web, etc.) que está haciendo la solicitud.
+Accept: indica los tipos de contenido que el cliente está dispuesto a aceptar. Por ejemplo, text html " para contenido HTML o application json " para contenido
+Authorization: proporciona credenciales de autenticación para acceder a recursos protegidos en el servidor.
+Cookie: incluye una o más cookies almacenadas previamente en el cliente, que se utilizarán para realizar un seguimiento de la sesión.
+Content Type: indica el tipo de contenido de la solicitud. Por ejemplo, "application/json " para datos en formato JSON.
+HTTP STATUS CODE:
+1xx (Respuestas informativas) Indica que la solicitud se ha recibido y se está procesando
+2xx (Respuestas satisfactorias) Indica que la solicitud se ha procesado correctamente y se ha completado con éxito
+3xx (Redirecciones) Indica que el cliente debe realizar más acciones para completar la solicitud
+4xx (Errores del cliente) Indica que la solicitud del cliente no se pudo procesar debido a un error en la solicitud
+5xx (Errores del servidor) Indica que la solicitud del cliente no se pudo procesar debido a un error en el servidor
+HTTP STATUS CODE MAS COMUNES:
+200 OK la solicitud se ha procesado correctamente y se ha completado con éxito
+201 Created la solicitud se ha procesado correctamente y se ha creado un nuevo recurso
+400 Bad Request la solicitud del cliente no se pudo procesar debido a un error en la solicitud
+401 Unauthorized la solicitud del cliente no se pudo procesar porque el cliente no está autorizado a acceder al recurso
+403 Forbidden la solicitud del cliente no se pudo procesar porque el servidor se niega a permitir el acceso al recurso
+404 Not Found la solicitud del cliente no se pudo procesar porque el servidor no pudo encontrar el recurso solicitado
+500 Internal Server Error la solicitud del cliente no se pudo procesar debido a un error en el servidor
+HTTP ACCESS CONTROL:
+Es un mecanismo que permite a los servidores web controlar el acceso a sus recursos por parte de los clientes a través de solicitudes HTTP
+Proporciona seguridad y protección contra el acceso no autorizado a recursos protegidos
+CROSS-ORIGIN RESOURCE SHARING (CORS):
+Permite a los servidores web indicar a los navegadores web si se permite que una solicitud de recursos se realice desde un origen diferente al del recurso solicitado
+OBJECT RELATIONAL MAPPING:
+Es un mecanismo que permite abordar, acceder y manipular objetos (Mapeo) sin tener que considerar cómo los objetos se relacionan con sus fuentes de datos.
+Permite crear una base de datos orientada a objetos “virtual” (Persistencia), sobre una base de datos relacional.
+Se considera una capa intermedia entre la base de datos y los objetos de la base de datos.
+PILARES DE LA POO:
+Abstracción, Encapsulamiento, Herencia, Polimorfismo
+PRINCIPIOS SOLID:
+S: Single responsibility principle o Principio de responsabilidad única Keyword Decoupled
+O: Open/ closed principle o Principio de abierto/cerrado Keyword Abstraction
+L: Liskov substitution principle o Principio de sustitución de Liskov Keyword Replaceable
+I: Interface segregation principle o Principio de segregación de la interfaz Keyword Segregate Interfaces
+D: Dependency inversion principle o Principio de inversión de dependencia Keyword Dependency
+PATRONES DE DISEÑO:
+Los patrones de diseño son soluciones habituales a problemas que ocurren con frecuencia en el diseño de software. Son como planos prefabricados que se pueden personalizar para resolver un problema de diseño recurrente en tu código.
+¿EN QUE CONSISTE EL PATRON?
+El propósito del patrón explica brevemente el problema y la solución
+La motivación explica en más detalle el problema y la solución que brinda el patrón
+La estructura de las clases muestra cada una de las partes del patrón y el modo en que se relacionan
+ENTITY FRAMEWORK CORE
+Es una versión ligera de código abierto y multiplataforma de la popular tecnología Entity Framework.
+Sirve como mapeador relacional de objetos (ORM)
+Admite muchos motores de bases de datos.
+Se accese mediante Modelos y para las consultas se utiliza LINQ
+Permite hacer CRUD a las tablas de la base de datos.
+
